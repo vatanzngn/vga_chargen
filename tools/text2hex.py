@@ -1,13 +1,6 @@
 import argparse
 import random
 
-# 3-bit RGB
-c_bg = "000"
-c_fg = "110"
-
-def convert(c):
-    return f"{c_bg}{c_fg}{ord(c):07b}\n"
-
 def generate(input_path, output_path, color):
     try:
         with open(input_path, "r") as input_file:
