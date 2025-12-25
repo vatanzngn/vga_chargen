@@ -4,7 +4,8 @@ use ieee.numeric_std.all;
 
 entity ps2kb is
     port(
-        clk_i : in std_logic;
+        sys_clk_i : in std_logic;
+        ps2_clk_i : in std_logic;
         data_i : in std_logic;
 
         -- indicates we fetched all bits of the key
@@ -15,6 +16,7 @@ end entity;
 
 architecture rtl of ps2kb is
 
+    signal ps2_clk_prev : std_logic := '0';
     signal parity : std_logic := '0';
     signal cntr : integer range 0 to 15 := 0;
     signal rx_ready : std_logic := '0';
@@ -22,10 +24,11 @@ architecture rtl of ps2kb is
 
 begin
 
-    process(clk_i) is begin
+    process(sys_clk_i) is begin
 
-        if falling_edge(clk_i) then
+        if rising_edge(sys_clk_i) then
 
+            ps2_clk_prev <= ps2_clk_i;
             rx_ready_o <= rx_ready;
             rx_o <= rx_data;
 
@@ -34,31 +37,35 @@ begin
                 parity <= '0';
             end if;
 
-            if (cntr = 0 and data_i = '0') or cntr /= 0 then
-                cntr <= cntr + 1;
-            end if;
+            if ps2_clk_prev = '1' and ps2_clk_i = '0' then
 
-            case cntr is
-                when 1 to 8 => 
-                    rx_data <= data_i & rx_data(7 downto 1);
-                    if data_i = '1' then
-                        -- the parity will be '1' when the number of ones in the data stream is and odd number, otherwise '0'.
-                        -- e.g., for '01001000' parity will be '0'
-                        parity <= not(parity);
-                    end if;
+                if (cntr = 0 and data_i = '0') or cntr /= 0 then
+                    cntr <= cntr + 1;
+                end if;
 
-                when 9 =>
-                    -- reuse the parity symbol to indicate the parity check has succeeded.
-                    parity <= parity xor data_i;
+                case cntr is
+                    when 1 to 8 => 
+                        rx_data <= data_i & rx_data(7 downto 1);
+                        if data_i = '1' then
+                            -- the parity will be '1' when the number of ones in the data stream is and odd number, otherwise '0'.
+                            -- e.g., for '01001000' parity will be '0'
+                            parity <= not(parity);
+                        end if;
+
+                    when 9 =>
+                        -- reuse the parity symbol to indicate the parity check has succeeded.
+                        parity <= parity xor data_i;
                 
-                when 10 =>
-                    if parity = '1' and data_i = '1' then
-                        rx_ready <= '1';
-                    end if;
-                    cntr <= 0;
+                    when 10 =>
+                        if parity = '1' and data_i = '1' then
+                            rx_ready <= '1';
+                        end if;
+                        cntr <= 0;
 
-                when others => null;
-            end case;
+                    when others => null;
+                end case;
+
+            end if;
 
         end if;
 
