@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
 
 entity ps2kb is
     port(
@@ -21,6 +22,27 @@ architecture rtl of ps2kb is
     signal cntr : integer range 0 to 15 := 0;
     signal rx_ready : std_logic := '0';
     signal rx_data : std_logic_vector(7 downto 0) := x"00";
+
+    -- ROM for mapping scan codes to ASCII
+
+    type rom_type is array (0 to 255) of bit_vector(7 downto 0);
+    
+    impure function InitRomFromFile (RomFileName : in string) return rom_type is
+        file RomFile : text open read_mode is RomFileName;
+        variable RomFileLine : line;
+        variable temp_bv : bit_vector(7 downto 0);
+        variable rom : rom_type;
+    begin
+        for i in 0 to 255 loop
+            readline(RomFile, RomFileLine);
+            hread(RomFileLine, temp_bv);
+            rom(i) := temp_bv;
+        end loop;
+        return rom;
+    end function;
+
+    -- Initialize the ROM signal
+    signal ascii_map : rom_type := InitRomFromFile("kb_layout_tr_q.mem");
 
 begin
 
@@ -59,6 +81,7 @@ begin
                     when 10 =>
                         if parity = '1' and data_i = '1' then
                             rx_ready <= '1';
+                            rx_data <= to_stdlogicvector(ascii_map(to_integer(unsigned(rx_data))));
                         end if;
                         cntr <= 0;
 
