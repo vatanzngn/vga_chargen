@@ -17,9 +17,10 @@ end entity;
 
 architecture rtl of ps2kb is
 
-    signal ps2_clk_prev : std_logic := '0';
-    signal parity : std_logic := '0';
+    signal ps2_clk_sync : std_logic_vector(1 downto 0) := "00";
     signal cntr : integer range 0 to 15 := 0;
+    signal skip_cnt : integer range 0 to 7 := 0;
+    signal parity : std_logic := '0';
     signal rx_ready : std_logic := '0';
     signal rx_data : std_logic_vector(7 downto 0) := x"00";
 
@@ -50,7 +51,7 @@ begin
 
         if rising_edge(sys_clk_i) then
 
-            ps2_clk_prev <= ps2_clk_i;
+            ps2_clk_sync <= ps2_clk_sync(0) & ps2_clk_i;
             rx_ready_o <= rx_ready;
             rx_o <= rx_data;
 
@@ -59,7 +60,7 @@ begin
                 parity <= '0';
             end if;
 
-            if ps2_clk_prev = '1' and ps2_clk_i = '0' then
+            if ps2_clk_sync = "10" then
 
                 if (cntr = 0 and data_i = '0') or cntr /= 0 then
                     cntr <= cntr + 1;
@@ -79,11 +80,23 @@ begin
                         parity <= parity xor data_i;
                 
                     when 10 =>
-                        if parity = '1' and data_i = '1' then
-                            rx_ready <= '1';
-                            rx_data <= to_stdlogicvector(ascii_map(to_integer(unsigned(rx_data))));
-                        end if;
                         cntr <= 0;
+                        if parity = '1' and data_i = '1' then
+                        
+                            if rx_data = x"F0" or rx_data = x"E0" then -- Release or Extended keys
+                                skip_cnt <= 1;
+                            elsif rx_data = x"E1" then
+                                skip_cnt <= 2; -- Pause/Break
+                            else
+                                if skip_cnt = 0 then
+                                    rx_ready <= '1';
+                                    rx_data <= to_stdlogicvector(ascii_map(to_integer(unsigned(rx_data))));
+                                else
+                                    skip_cnt <= skip_cnt - 1;
+                                end if;
+                            end if;
+                        
+                        end if;
 
                     when others => null;
                 end case;
