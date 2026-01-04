@@ -1,12 +1,14 @@
 import argparse
 import random
 
-def generate(input_path, output_path, color):
+def generate(input_path, output_path, color, is_random):
     try:
         with open(input_path, "r") as input_file:
             with open(output_path, "w") as output_file:
                 for il in input_file:
                     for c in il:
+                        if is_random:
+                            color = "".join(random.choice("01") for _ in range(6))
                         output_file.write(f"{color}{ord(c):07b}\n")
     except FileNotFoundError as e:
         print(e)
@@ -18,9 +20,6 @@ if __name__ == "__main__":
     parser.add_argument('-c', default='000111', help='Defined color value bg(3) font(3)')
     parser.add_argument('--random', action='store_true', help='Random value for colors')
 
-    args = parser.parse_args()
+    args = parser.parse_args()    
 
-    if args.random:
-        args.c = "".join(random.choice("01") for _ in range(6))        
-
-    generate(args.i, args.o, args.c)
+    generate(args.i, args.o, args.c, args.random)
