@@ -1,8 +1,6 @@
-# Timing Constraint
-create_clock -period 6.666 -name s_px_clk -waveform {0.000 3.333} -add [get_ports SYS_CLK_I]
-
+# BOARD SPESIFIC CONFIGS : ZEDBOARD
 # Clock Source - Bank 13
-set_property PACKAGE_PIN Y9 [get_ports {SYS_CLK_I}];  # "GCLK"
+set_property PACKAGE_PIN Y9 [get_ports {SYSCLK_I}];  # "GCLK"
 
 # User LEDs - Bank 33
 # set_property PACKAGE_PIN T22 [get_ports {led_o[0]}];  # "LD0"
@@ -44,12 +42,13 @@ set_property PACKAGE_PIN G22 [get_ports {FONT_SEL_I[1]}];  # "SW1"
 # set_property PACKAGE_PIN H22 [get_ports {sw_i[2]}];  # "SW2"
 # set_property PACKAGE_PIN F21 [get_ports {sw_i[3]}];  # "SW3"
 # set_property PACKAGE_PIN H19 [get_ports {sw_i[4]}];  # "SW4"
-set_property PACKAGE_PIN H18 [get_ports {RES_SEL_I[0]}];  # "SW5"
-set_property PACKAGE_PIN H17 [get_ports {RES_SEL_I[1]}];  # "SW6"
-set_property PACKAGE_PIN M15 [get_ports {RES_SEL_I[2]}];  # "SW7"
+# set_property PACKAGE_PIN H18 [get_ports {sw_i[5]}];  # "SW5"
+set_property PACKAGE_PIN H17 [get_ports {RES_SEL_I[0]}];  # "SW6"
+set_property PACKAGE_PIN M15 [get_ports {RES_SEL_I[1]}];  # "SW7"
 
 # JA P-Mod (Has 200R protection resistors and suitable for single ended signals)
 set_property PACKAGE_PIN Y11  [get_ports {UART_RX_I}];  # "JA1"
+set_property PULLUP true [get_ports UART_RX_I]
 #set_property PACKAGE_PIN AA11 [get_ports {JA2}];  # "JA2"
 
 
@@ -59,7 +58,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 33]];
 # Set the bank voltage for IO Bank 34 to 1.8V by default.
 # set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 34]];
 # set_property IOSTANDARD LVCMOS25 [get_ports -of_objects [get_iobanks 34]];
-set_property IOSTANDARD LVCMOS18 [get_ports -of_objects [get_iobanks 34]];
+set_property IOSTANDARD LVCMOS18 [get_ports -of_objects [get_iobanks 34]];W
 
 # Set the bank voltage for IO Bank 35 to 1.8V by default.
 # set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 35]];
@@ -68,3 +67,20 @@ set_property IOSTANDARD LVCMOS18 [get_ports -of_objects [get_iobanks 35]];
 
 # Note that the bank voltage for IO Bank 13 is fixed to 3.3V on ZedBoard. 
 set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 13]];
+
+
+
+
+
+
+# TIMING CONFIGURATIONS
+# Timing Constraint
+create_clock -period 10.000 -name s_px_clk -waveform {0.000 5.000} -add [get_ports SYSCLK_I]
+
+set_false_path -from [get_cells -hierarchical *debouncer_inst*] -to [get_cells -hierarchical *vga_chargen_inst*]
+
+set_false_path -from [get_cells -hierarchical *datawriter_inst/r_busy_reg] -to [get_cells -hierarchical *datawriter_inst/r_busy_sync0_reg]
+
+set_false_path -from [get_ports FONT_SEL_I*]
+set_false_path -from [get_ports RES_SEL_I*]
+
