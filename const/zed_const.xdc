@@ -48,6 +48,11 @@ set_property PACKAGE_PIN H18 [get_ports {RES_SEL_I[0]}];  # "SW5"
 set_property PACKAGE_PIN H17 [get_ports {RES_SEL_I[1]}];  # "SW6"
 set_property PACKAGE_PIN M15 [get_ports {RES_SEL_I[2]}];  # "SW7"
 
+# JA P-Mod (Has 200R protection resistors and suitable for single ended signals)
+set_property PACKAGE_PIN Y11  [get_ports {UART_RX_I}];  # "JA1"
+#set_property PACKAGE_PIN AA11 [get_ports {JA2}];  # "JA2"
+
+
 # Note that the bank voltage for IO Bank 33 is fixed to 3.3V on ZedBoard. 
 set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 33]];
 
