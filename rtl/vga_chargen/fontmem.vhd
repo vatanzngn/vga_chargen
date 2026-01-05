@@ -114,9 +114,9 @@ architecture rtl of fontmem is
     attribute rom_style of s_font_mem64x64 : signal is "block";
     
     
-    signal s_fontmem16x16_ptr : integer range 0 to 128*16-1 := 0;
-    signal s_fontmem32x32_ptr : integer range 0 to 128*32-1 := 0;
-    signal s_fontmem64x64_ptr : integer range 0 to 128*64-1 := 0;
+    signal s_fontmem16x16_ptr : integer range 0 to 128*16-1;
+    signal s_fontmem32x32_ptr : integer range 0 to 128*32-1;
+    signal s_fontmem64x64_ptr : integer range 0 to 128*64-1;
 
     signal s_read_data16x16   : std_logic_vector(15 downto 0) := (others => '0');
     signal s_read_data32x32   : std_logic_vector(31 downto 0) := (others => '0');

@@ -30,7 +30,7 @@ entity top_wrapper is
 end entity;
 
 architecture rtl of top_wrapper is
-    
+    signal s_vga_rst         : std_logic := '0';
     signal s_px_clk          : std_logic := '0';
     signal s_cm_ready        : std_logic := '0';
     signal s_datawriter_busy : std_logic := '0';
@@ -39,6 +39,8 @@ architecture rtl of top_wrapper is
     signal s_dmem_wradr      : unsigned(integer(ceil(log2(real(G_MEM_DEPTH))))-1 downto 0) := (others => '0');
 
 begin
+
+    s_vga_rst <= RST_I or not(s_cm_ready) or s_datawriter_busy;
 
     clockmaker_inst : entity work.clockmaker
     port map(
@@ -78,7 +80,7 @@ begin
     port map(
         SYSCLK_I         => SYSCLK_I,
         PX_CLK_I         => s_px_clk,
-        RST_I            => RST_I or not(s_cm_ready) or s_datawriter_busy,
+        RST_I            => s_vga_rst,
         FONT_SEL_I       => FONT_SEL_I, 
         RES_SEL_I        => RES_SEL_I,  
         DMEM_DAT_I       => s_dmem_wrdat,
